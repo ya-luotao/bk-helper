@@ -49,14 +49,14 @@ function createFloatingButtons() {
     likeButton.onclick = () => {
       toggleLike(likeButton, house_code, name);
     };
-    //buttonsContainer.appendChild(likeButton);
+    buttonsContainer.appendChild(likeButton);
 
     const followCommunityButton = document.createElement('button');
     followCommunityButton.textContent = '关注小区';
     followCommunityButton.onclick = () => {
       // 在这里添加关注小区的逻辑
     };
-    buttonsContainer.appendChild(followCommunityButton);
+    // buttonsContainer.appendChild(followCommunityButton);
   });
 }
 

@@ -5,10 +5,7 @@ for (let i = 0; i < elements.length; i++) {
   const adElements = elements[i].getElementsByClassName('content__list--item--ad')
   if (adElements.length > 0) {
 
-    elements[i].style.borderRaidus = '5px';
-    elements[i].style.height = '12px';
-    elements[i].style.filter = 'grayscale(100%) blur(3px)';
-    elements[i].style.overflow = 'hidden';
+    elements[i].style.display = 'none';
   } else {
     createFloatingButtons();
   }

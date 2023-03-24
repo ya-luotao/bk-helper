@@ -1,6 +1,6 @@
-# My Chrome Extension
+# bk helper (chrome extension)
 
-这个项目是一个基于 Chrome 的扩展程序，用于在访问 https://sh.zu.ke.com/zufang 类似页面时，对页面上的房源信息进行筛选和关注。
+这个项目是一个基于 Chrome 的扩展程序，用于在访问 https://sh.zu.ke.com/zufang 页面时，对页面上的房源信息进行筛选和关注。
 
 ## 功能
 

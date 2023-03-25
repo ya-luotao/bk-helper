@@ -33,6 +33,10 @@
             padding: 10px;
           }
 
+          li.dislike-item a, li.like-item a {
+            color: #000;
+          }
+
           .dislike-text, .like-text {
             margin-right: 10px;
             flex-grow: 1;
@@ -55,15 +59,15 @@
         </style>
   </head>
   <body>
-    <h1>已屏蔽的房子</h1>
-    <button class="select-all-button">全选/取消全选</button>
-    <button class="delete-selected-button">删除选中项</button>
-    <ul class="dislikes-list"></ul>
-
     <h1>关注列表</h1>
     <button class="select-all-likes-button">全选/取消全选</button>
     <button class="delete-selected-likes-button">删除选中项</button>
     <ul class="likes-list"></ul>
+
+    <h1>已屏蔽的房子</h1>
+    <button class="select-all-button">全选/取消全选</button>
+    <button class="delete-selected-button">删除选中项</button>
+    <ul class="dislikes-list"></ul>
 
     <script src="popup.js"></script>
   </body>

@@ -41,7 +41,7 @@ function displayDislikes() {
   listElement.innerHTML = ''; // 清空列表，以便重新渲染
   chrome.storage.local.get(['dislikes'], function (result) {
     const dislikes = result.dislikes || [];
-    dislikes.forEach(({ house_code, name }, index) => {
+    dislikes.forEach(({ house_code, name, price, href }, index) => {
       const listItem = document.createElement('li');
       listItem.className = 'dislike-item';
 
@@ -52,7 +52,7 @@ function displayDislikes() {
 
       const text = document.createElement('span');
       text.className = 'dislike-text';
-      text.textContent = `房子代码: ${house_code}, 名称: ${name}`;
+      text.innerHTML = `<a href="https://sh.zu.ke.com${href}" target="_blank">${name}</a> ${price}元/月`;
       listItem.appendChild(text);
 
       const deleteButton = document.createElement('button');
@@ -118,7 +118,7 @@ function displayLikes() {
   listElement.innerHTML = ''; // 清空列表，以便重新渲染
   chrome.storage.local.get(['likes'], function (result) {
     const likes = result.likes || [];
-    likes.forEach(({ house_code, name }, index) => {
+    likes.forEach(({ house_code, name, price, href }, index) => {
       const listItem = document.createElement('li');
       listItem.className = 'like-item';
 
@@ -129,7 +129,7 @@ function displayLikes() {
 
       const text = document.createElement('span');
       text.className = 'like-text';
-      text.textContent = `房子代码: ${house_code}, 名称: ${name}`;
+      text.innerHTML = `<a href="https://sh.zu.ke.com${href}" target="_blank">${name}</a> ${price}元/月`;
       listItem.appendChild(text);
 
       const deleteButton = document.createElement('button');

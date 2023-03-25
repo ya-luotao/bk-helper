@@ -1,99 +1,3 @@
-const elements = document.getElementsByClassName('content__list--item');
-
-for (let i = 0; i < elements.length; i++) {
-
-  const adElements = elements[i].getElementsByClassName('content__list--item--ad')
-  if (adElements.length > 0) {
-
-    elements[i].style.display = 'none';
-  } else {
-    createFloatingButtons();
-  }
-}
-
-function createFloatingButtons() {
-  const items = document.querySelectorAll('.content__list--item:not(.content__list--item--ad)');
-
-  items.forEach((item) => {
-    const house_code = item.getAttribute('data-house_code');
-
-    const buttonsContainer = document.createElement('div');
-    buttonsContainer.style.position = 'absolute';
-    buttonsContainer.style.right = '10px';
-    buttonsContainer.style.top = '10px';
-    buttonsContainer.style.display = 'flex';
-    buttonsContainer.style.gap = '4px';
-    item.style.position = 'relative';
-    item.appendChild(buttonsContainer);
-
-    const dislikeButton = document.createElement('button');
-    dislikeButton.textContent = '不看这个房子';
-    dislikeButton.onclick = () => {
-      hideItem(item);
-      addToDislikes(house_code, name);
-    };
-    buttonsContainer.appendChild(dislikeButton);
-
-    const ignoreCommunityButton = document.createElement('button');
-    ignoreCommunityButton.textContent = '不看这个小区';
-    ignoreCommunityButton.onclick = () => {
-      // 在这里添加不看这个小区的逻辑
-    };
-    //buttonsContainer.appendChild(ignoreCommunityButton);
-
-    const likeButton = document.createElement('button');
-    const name = item.querySelector('.content__list--item--aside').getAttribute('title');
-    isLiked(house_code, (liked) => {
-      likeButton.textContent = liked ? '已关注' : '加入关注';
-    });
-    likeButton.onclick = () => {
-      toggleLike(likeButton, house_code, name);
-    };
-    buttonsContainer.appendChild(likeButton);
-
-    const followCommunityButton = document.createElement('button');
-    followCommunityButton.textContent = '关注小区';
-    followCommunityButton.onclick = () => {
-      // 在这里添加关注小区的逻辑
-    };
-    // buttonsContainer.appendChild(followCommunityButton);
-  });
-}
-
-
-function removeLike(house_code) {
-  chrome.storage.local.get(['likes'], function (result) {
-    const likes = result.likes || [];
-    const index = likes.findIndex((like) => like.house_code === house_code);
-    if (index >= 0) {
-      likes.splice(index, 1);
-      chrome.storage.local.set({ likes: likes }, function () {
-        console.log('Removed like:', house_code);
-      });
-    }
-  });
-}
-
-function isLiked(house_code, callback) {
-  chrome.storage.local.get(['likes'], function (result) {
-    const likes = result.likes || [];
-    const index = likes.findIndex((like) => like.house_code === house_code);
-    callback(index >= 0);
-  });
-}
-
-function toggleLike(button, house_code, name) {
-  isLiked(house_code, (liked) => {
-    if (liked) {
-      removeLike(house_code);
-      button.textContent = '加入关注';
-    } else {
-      addLike(house_code, name);
-      button.textContent = '已关注';
-    }
-  });
-}
-
 function createButton(text, onClick) {
   const button = document.createElement('button');
   button.style.backgroundColor = '#f0f0f0';
@@ -107,53 +11,119 @@ function createButton(text, onClick) {
   return button;
 }
 
-function addLike(house_code, name) {
-  chrome.storage.local.get(['likes'], function (result) {
-    const likes = result.likes || [];
-    likes.push({ house_code, name });
-    chrome.storage.local.set({ likes: likes }, function () {
-      console.log('Added like:', house_code, name);
-    });
+function createButtonsContainer() {
+  const container = document.createElement('div');
+  container.style.position = 'absolute';
+  container.style.right = '10px';
+  container.style.bottom = '20px';
+  container.style.display = 'flex';
+  container.style.gap = '4px';
+  return container;
+}
+
+function getItemInfo(item) {
+  const house_code = item.getAttribute('data-house_code');
+  const name = item.querySelector('.content__list--item--aside').getAttribute('title');
+  const href = item.querySelector('.content__list--item--aside').getAttribute('href');
+  const price = item.querySelector('.content__list--item-price em').textContent;
+  return { house_code, name, href, price };
+}
+
+function updateStorage(key, value) {
+  return new Promise((resolve) => {
+    chrome.storage.local.set({ [key]: value }, resolve);
   });
 }
 
-function addToDislikes(house_code, name, itemElement) {
-  chrome.storage.local.get(['dislikes'], function (result) {
-    const dislikes = result.dislikes || [];
-    dislikes.push({ house_code, name });
-    chrome.storage.local.set({ dislikes }, function () {
-      console.log('Added to dislikes:', { house_code, name });
-    });
+function getStorage(key) {
+  return new Promise((resolve) => {
+    chrome.storage.local.get([key], (result) => resolve(result[key]));
   });
 }
 
-function hideItem(item) {
-  item.style.borderRaidus = '5px';
-  item.style.height = '12px';
-  item.style.filter = 'grayscale(100%) blur(3px)';
+async function toggleLike(button, house_code, item) {
+  const likes = await getStorage('likes') || [];
+  const index = likes.findIndex((like) => like.house_code === house_code);
+
+  if (index >= 0) {
+    likes.splice(index, 1);
+    button.textContent = '加入关注';
+  } else {
+    likes.push(getItemInfo(item));
+    button.textContent = '已关注';
+  }
+
+  await updateStorage('likes', likes);
+}
+
+function createLikeButton(house_code, item) {
+  const button = createButton('检查中...', async () => {
+    await toggleLike(button, house_code, item);
+  });
+
+  (async () => {
+    const likes = await getStorage('likes') || [];
+    const isLiked = likes.some((like) => like.house_code === house_code);
+    button.textContent = isLiked ? '已关注' : '加入关注';
+  })();
+
+  return button;
+}
+
+function createDislikeButton(house_code, item) {
+  const button = createButton('不看这个房子', async () => {
+    bluredItem(item);
+    const dislikes = await getStorage('dislikes') || [];
+
+    dislikes.push(getItemInfo(item));
+    await updateStorage('dislikes', dislikes);
+  });
+
+  return button;
+}
+
+function bluredItem(item) {
+  item.style.height = '8px';
   item.style.overflow = 'hidden';
-  item.style.border = '1px solid gray';
+  item.style.filter = 'blur(3px) grayscale(1)';
 }
 
-function hideDislikedItems() {
-  chrome.storage.local.get(['dislikes'], function (result) {
+function setupItem(item) {
+  const { house_code, name, price, href } = getItemInfo(item);
+
+  const buttonsContainer = createButtonsContainer();
+  item.style.position = 'relative';
+  item.appendChild(buttonsContainer);
+
+  const dislikeButton = createDislikeButton(house_code, item);
+  buttonsContainer.appendChild(dislikeButton);
+
+  const likeButton = createLikeButton(house_code, item);
+  buttonsContainer.appendChild(likeButton);
+}
+
+function init() {
+  const items = document.querySelectorAll('.content__list--item');
+
+  chrome.storage.local.get(['dislikes'], (result) => {
     const dislikes = result.dislikes || [];
-    const items = document.getElementsByClassName('content__list--item');
 
-    for (let i = 0; i < items.length; i++) {
-      const house_code = items[i].getAttribute('data-house_code');
-      const name = items[i].querySelector('.content__list--item--aside').getAttribute('title');
-
-      if (dislikes.some(dislike => dislike.house_code === house_code)) {
-        items[i].style.borderRaidus = '5px';
-        items[i].style.height = '12px';
-        items[i].style.filter = 'grayscale(100%) blur(3px)';
-        items[i].style.overflow = 'hidden';
-        items[i].style.border = '1px solid gray';
+    items.forEach((item) => {
+      const adElements = item.querySelectorAll('.content__list--item--ad');
+      if (adElements.length > 0) {
+        item.style.display = 'none';
       } else {
+        const { house_code } = getItemInfo(item);
+        if (dislikes.some(dislike => dislike.house_code === house_code)) {
+          bluredItem(item);
+        } else {
+          setupItem(item);
+        }
+
       }
-    }
+    });
   });
 }
 
-hideDislikedItems();
+init();
+

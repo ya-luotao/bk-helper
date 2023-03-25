@@ -1,74 +1,140 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <style>
-          body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 15px;
-            width: 640px;
-          }
 
-          h1 {
-            font-size: 18px;
-            margin-top: 0;
-            margin-bottom: 15px;
-          }
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 15px;
+      width: 640px;
+    }
 
-          ul.dislikes-list, ul.likes-list {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-          }
+    h1 {
+      font-size: 18px;
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
 
-          li.dislike-item, li.like-item {
-            display: flex;
-            justify-content: space-between; /* 新增 */
-            align-items: center;
-            background-color: #f5f5f5;
-            border: 1px solid #e0e0e0;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            padding: 10px;
-          }
+    ul.dislikes-list,
+    ul.likes-list,
+    ul.ignored-neighborhoods-list {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
 
-          li.dislike-item a, li.like-item a {
-            color: #000;
-          }
+    li.dislike-item,
+    li.like-item {
+      display: flex;
+      justify-content: space-between;
+      /* 新增 */
+      align-items: center;
+      background-color: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      padding: 10px;
+    }
 
-          .dislike-text, .like-text {
-            margin-right: 10px;
-            flex-grow: 1;
-          }
+    li.dislike-item a,
+    li.like-item a {
+      color: #000;
+    }
 
-          button.delete-button {
-            flex-shrink: 0; /* 新增 */
-            background-color: #ff4d4d;
-            border: none;
-            border-radius: 3px;
-            color: #ffffff;
-            cursor: pointer;
-            font-size: 14px;
-            padding: 5px 10px;
-          }
+    .dislike-text,
+    .like-text {
+      margin-right: 10px;
+      flex-grow: 1;
+    }
 
-          button.delete-button:hover {
-            background-color: #ff1a1a;
-          }
-        </style>
-  </head>
-  <body>
-    <h1>关注列表</h1>
+    button.delete-button {
+      flex-shrink: 0;
+      /* 新增 */
+      background-color: #ff4d4d;
+      border: none;
+      border-radius: 3px;
+      color: #ffffff;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 5px 10px;
+    }
+
+    button.delete-button:hover {
+      background-color: #ff1a1a;
+    }
+
+    .tabs {
+      display: flex;
+      margin-bottom: 15px;
+    }
+
+    .tab {
+      flex-grow: 1;
+      text-align: center;
+      padding: 10px;
+      cursor: pointer;
+      background-color: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      border-radius: 5px;
+      margin-right: 5px;
+    }
+
+    .tab:last-child {
+      margin-right: 0;
+    }
+
+    .tab.active {
+      background-color: #ffffff;
+      border-bottom: 1px solid #ffffff;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="tabs">
+    <div class="tab tab-likes active" data-target="likes">关注列表</div>
+    <div class="tab tab-dislikes" data-target="dislikes">已屏蔽的房子</div>
+    <div class="tab tab-ignored-neighborhoods" data-target="ignored-neighborhoods">不关注的小区</div>
+  </div>
+
+  <div class="tab-content likes active">
+    <!-- 关注列表相关的内容 -->
     <button class="select-all-likes-button">全选/取消全选</button>
     <button class="delete-selected-likes-button">删除选中项</button>
     <ul class="likes-list"></ul>
+  </div>
 
-    <h1>已屏蔽的房子</h1>
+  <div class="tab-content dislikes">
+    <!-- 已屏蔽的房子相关的内容 -->
     <button class="select-all-button">全选/取消全选</button>
     <button class="delete-selected-button">删除选中项</button>
     <ul class="dislikes-list"></ul>
+  </div>
 
-    <script src="popup.js"></script>
-  </body>
+  <div class="tab-content ignored-neighborhoods">
+    <!-- 不关注的小区相关的内容 -->
+    <button class="select-all-ignored-neigh-button">全选/取消全选</button>
+    <button class="delete-selected-ignored-neigh-button">删除选中项</button>
+    <ul class="ignored-neighborhoods-list"></ul>
+  </div>
+
+
+
+
+
+
+
+  <script src="popup.js"></script>
+</body>
+
 </html>

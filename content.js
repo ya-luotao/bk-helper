@@ -26,7 +26,12 @@ function getItemInfo(item) {
   const name = item.querySelector('.content__list--item--aside').getAttribute('title');
   const href = item.querySelector('.content__list--item--aside').getAttribute('href');
   const price = item.querySelector('.content__list--item-price em').textContent;
-  return { house_code, name, href, price };
+
+  const neighborhoodLinkElement = item.querySelector('.content__list--item--des a:nth-child(3)');
+  const neighborhoodTitle = neighborhoodLinkElement.textContent.trim();
+  const neighborhoodHref = neighborhoodLinkElement.getAttribute('href');
+
+  return { house_code, name, href, price, neighborhoodHref, neighborhoodTitle };
 }
 
 function updateStorage(key, value) {
@@ -39,6 +44,24 @@ function getStorage(key) {
   return new Promise((resolve) => {
     chrome.storage.local.get([key], (result) => resolve(result[key]));
   });
+}
+
+// 添加一个新的不关注的小区到列表中
+async function addIgnoredNeighborhood(neighborhoodInfo) {
+  const ignoredNeighborhoods = await getStorage('ignoredNeighborhoods') || [];
+  ignoredNeighborhoods.push(neighborhoodInfo);
+  await updateStorage('ignoredNeighborhoods', ignoredNeighborhoods);
+}
+
+// 从列表中移除一个不关注的小区
+async function removeIgnoredNeighborhood(neighborhoodHref) {
+  const ignoredNeighborhoods = await getStorage('ignoredNeighborhoods') || [];
+  const index = ignoredNeighborhoods.findIndex((n) => n.neighborhoodHref === neighborhoodHref);
+
+  if (index >= 0) {
+    ignoredNeighborhoods.splice(index, 1);
+    await updateStorage('ignoredNeighborhoods', ignoredNeighborhoods);
+  }
 }
 
 async function toggleLike(button, house_code, item) {
@@ -82,6 +105,24 @@ function createDislikeButton(house_code, item) {
   return button;
 }
 
+function createIgnoreNeighborhoodButton(item) {
+  const button = createButton("不看这个小区", async () => {
+    // 获取房源信息，包括小区信息
+    const itemInfo = getItemInfo(item);
+
+    // 添加到 ignoredNeighborhoods 列表
+    await addIgnoredNeighborhood({
+      neighborhoodTitle: itemInfo.neighborhoodTitle,
+      neighborhoodHref: itemInfo.neighborhoodHref,
+    });
+
+    // 使用 bluredItem 函数将房源变得模糊
+    bluredItem(item);
+  });
+
+  return button;
+}
+
 function bluredItem(item) {
   item.style.height = '8px';
   item.style.overflow = 'hidden';
@@ -89,7 +130,7 @@ function bluredItem(item) {
 }
 
 function setupItem(item) {
-  const { house_code, name, price, href } = getItemInfo(item);
+  const { house_code } = getItemInfo(item);
 
   const buttonsContainer = createButtonsContainer();
   item.style.position = 'relative';
@@ -98,6 +139,9 @@ function setupItem(item) {
   const dislikeButton = createDislikeButton(house_code, item);
   buttonsContainer.appendChild(dislikeButton);
 
+  const ignoreNeighborhoodButton = createIgnoreNeighborhoodButton(item);
+  buttonsContainer.appendChild(ignoreNeighborhoodButton);
+
   const likeButton = createLikeButton(house_code, item);
   buttonsContainer.appendChild(likeButton);
 }
@@ -105,16 +149,23 @@ function setupItem(item) {
 function init() {
   const items = document.querySelectorAll('.content__list--item');
 
-  chrome.storage.local.get(['dislikes'], (result) => {
+  chrome.storage.local.get(['dislikes', 'ignoredNeighborhoods'], (result) => {
     const dislikes = result.dislikes || [];
+    const ignoredNeighborhoods = result.ignoredNeighborhoods || [];
 
     items.forEach((item) => {
       const adElements = item.querySelectorAll('.content__list--item--ad');
       if (adElements.length > 0) {
         item.style.display = 'none';
       } else {
-        const { house_code } = getItemInfo(item);
-        if (dislikes.some(dislike => dislike.house_code === house_code)) {
+        const info = getItemInfo(item);
+
+        const isDisliked = dislikes.some((dislike) => dislike.house_code === info.house_code);
+        const isNeighborhoodIgnored = ignoredNeighborhoods.some(
+          (ignoredNeighborhood) => ignoredNeighborhood.neighborhoodHref === info.neighborhoodHref
+        );
+
+        if (isDisliked || isNeighborhoodIgnored) {
           bluredItem(item);
         } else {
           setupItem(item);
